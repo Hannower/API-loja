@@ -23,11 +23,25 @@ app.post("/produtos/registro", validarDados, cadastrarProduto);
 // ===== CRIAR OS DEMAIS MÉTODOS DA API ===== //
 
 // BUSCAR TODOS (GET)
+
+app.get("/produtos",(request, response) => {
+    buscarDados(response);
+})
 // BUSCAR PELO ID (GET: ID)
 // EDITAR PELO ID (PUT: ID)
 // EXCLUIR PELO ID (DELETE: ID)
 
+async function buscarDados(response) {
+    const dados = await fs.readFile(nomeArquivo, "utf-8") || [];
+    const listaProdutos = dados.trim() ? JSON.parse(dados) : [];
 
+    const nomeProduto = listaProdutos.map((produtos) => {
+        return (`<p>${produtos.nome}</p>`);
+    }).join(); 
+
+    response.send(nomeProduto);
+      
+}
 
 // ===== FUNCTIONS ===== //
 
