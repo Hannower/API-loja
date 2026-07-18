@@ -1,0 +1,15 @@
+[
+   {
+      "id":         1,
+      "nome":       "Picanha na Brasa",
+      "descricao":  "Picanha macia e suculenta, grelhada na brasa. Acompanha arroz, farofa e vinagrete.",
+      "fotos":      [
+        "https://cdn.pixabay.com/photo/2020/06/17/21/54/meat-5311300_1280.jpg",
+        "https://images.pexels.com/photos/29030327/pexels-photo-29030327.jpeg"
+      ],
+      "preco":      58,
+      "categoria":  "comida",
+      "disponivel": true,
+      "createdAt":  "2026-07-15"
+   }
+]

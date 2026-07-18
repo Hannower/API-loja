@@ -1,8 +1,10 @@
-// Importa o Express
+// Importa o Express e FS
 import express from "express";
+import fs from "fs/promises";
 
-const app = express();
 const porta = 3000;
+const app = express();
+const nomeArquivo = "listaProdutos.json";
 
 // Converte para JSON
 app.use(express.json());
@@ -14,27 +16,24 @@ app.get("/", (request, response) => {
     response.send("<h2>Bem-vindo(a) à nossa Loja</h2>");
 });
 
-// Chama o método inicial
-app.post("/produtos/registro", validarDados, cadastrarProduto, (request, response) => {					
-    const {
-        id, nome, descricao,
-        fotos, preco, categoria,
-        disponivel, createdAt
+// Cadastra um novo produto
+app.post("/produtos/registro", validarDados, cadastrarProduto);
 
-    } = request.produtoCadastrado;
 
-    // response.json({
-    //     mensagem: "Login efetuado com sucesso!",
-    //     data: { id, nome, email }
-    // });
-});
+// ===== CRIAR OS DEMAIS MÉTODOS DA API ===== //
+
+// BUSCAR TODOS (GET)
+// BUSCAR PELO ID (GET: ID)
+// EDITAR PELO ID (PUT: ID)
+// EXCLUIR PELO ID (DELETE: ID)
+
 
 
 // ===== FUNCTIONS ===== //
 
 function validarDados(request, response, next) {
     // Recebe os dados vindos do POST (formulário)
-   const {
+    const {
         nome, descricao, fotos,
         preco, categoria
     } = request.body || {};
@@ -52,7 +51,58 @@ function validarDados(request, response, next) {
     next();
 }
 
-function cadastrarProduto() {}
+async function cadastrarProduto(request, response) {
+    try {
+        // Desestruturação 
+        const { nome, descricao, fotos, preco, categoria, disponivel = true } = request.body;
+        
+        // É o equivalente à:
+        // const nome = request.body.nome;
+        // const descricao = request.body.descricao;
+        // const fotos = request.body.fotos;
+        // const preco = request.body.preco;
+        // const categoria = request.body.categoria;
+        // const disponivel = request.body.disponivel || true; // valor default
+
+        // Lê o arquivo atual
+        const dados = await fs.readFile(nomeArquivo, "utf-8") || [];
+        // const listaProdutos = JSON.parse(dados);
+        const listaProdutos = dados.trim() ? JSON.parse(dados) : [];
+        
+        // Cria o novo produto
+        const novoProduto = {
+            id: Date.now(),  // Timestamp
+            // nomeProduto: nome, // o mesmo que:
+            nome,
+            // descricao: descricao, // o mesmo que:
+            descricao: descricao,
+            // fotosProdutos: fotos; // o mesmo que:
+            fotos,
+            preco,
+            categoria,
+            disponivel,
+            createdAt: Date()
+        };
+
+        // Adiciona o novo produto na lista
+        listaProdutos.push(novoProduto);
+        
+        // Adiciona e grava de volta no arquivo
+        await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos));
+        // await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos, null, 2   ));
+
+        // Response
+        response.status(201).json({
+            mensagem: "Produto cadastrado com sucesso!",
+            data: novoProduto
+        });
+
+    } catch (erro) {
+        console.error(erro);
+        response.status(500).json({ erro: "Erro interno ao cadastrar produto" });
+    }
+}
+
 
 
 // ===== RODA O SERVER ===== //

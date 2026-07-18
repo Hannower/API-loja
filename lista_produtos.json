@@ -1,15 +1,22 @@
 [
    {
-      "id":         1,
-      "nome":       "Picanha na Brasa",
-      "descricao":  "Picanha macia e suculenta, grelhada na brasa. Acompanha arroz, farofa e vinagrete.",
-      "fotos":      [
-        "https://cdn.pixabay.com/photo/2020/06/17/21/54/meat-5311300_1280.jpg",
-        "https://images.pexels.com/photos/29030327/pexels-photo-29030327.jpeg"
-      ],
-      "preco":      58,
-      "categoria":  "comida",
-      "disponivel": true,
-      "createdAt":  "2026-07-15"
+      "id":1784299565218,
+      "nome":"Café",
+      "descricao":"Café puro, moído na hora",
+      "fotos":[],
+      "preco":7,
+      "categoria":"bebida",
+      "disponivel":true,
+      "createdAt":"Fri Jul 17 2026 11:46:05 GMT-0300 (Horário Padrão de Brasília)"
+   },
+
+   {"id":1784299917882,
+   "nome":"Cappuccino",
+   "descricao":"Café espresso, creme, chocolate e raspas de canela",
+   "fotos":[],
+   "preco":15,
+   "categoria":"bebida",
+   "disponivel":true,
+   "createdAt":"Fri Jul 17 2026 11:51:57 GMT-0300 (Horário Padrão de Brasília)"
    }
 ]
