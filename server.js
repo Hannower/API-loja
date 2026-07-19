@@ -23,27 +23,43 @@ app.post("/produtos/registro", validarDados, cadastrarProduto);
 // ===== CRIAR OS DEMAIS MÉTODOS DA API ===== //
 
 // BUSCAR TODOS (GET)
-
 app.get("/produtos",(request, response) => {
     buscarDados(response);
 })
+
 // BUSCAR PELO ID (GET: ID)
+app.get("/produtos/:id", buscarDadosId);
+
 // EDITAR PELO ID (PUT: ID)
+app.put("/produtos/editar/:id", editarDados)
+
 // EXCLUIR PELO ID (DELETE: ID)
 
-async function buscarDados(response) {
-    const dados = await fs.readFile(nomeArquivo, "utf-8") || [];
-    const listaProdutos = dados.trim() ? JSON.parse(dados) : [];
-
-    const nomeProduto = listaProdutos.map((produtos) => {
-        return (`<p>${produtos.nome}</p>`);
-    }).join(); 
-
-    response.send(nomeProduto);
-      
-}
-
 // ===== FUNCTIONS ===== //
+
+async function editarDados(request, response) {
+    const dados = await fs.readFile(nomeArquivo, "utf-8");
+    const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
+
+    const idBuscado = Number(request.params.id);
+
+    const indice = listaProdutos.findIndex((p) => p.id === idBuscado);
+
+    if (indice === -1) {
+        return response.status(404).send("<p>Produto não encontrado.</p>");
+    }
+
+    const produtoAtualizado = { ...listaProdutos[indice], ...request.body };
+
+    listaProdutos[indice] = produtoAtualizado;
+
+    await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos));
+
+    response.status(200).json({
+        mensagem: "Produto atualizado com sucesso!",
+        data: produtoAtualizado
+    });
+}
 
 function validarDados(request, response, next) {
     // Recebe os dados vindos do POST (formulário)
@@ -115,6 +131,49 @@ async function cadastrarProduto(request, response) {
         console.error(erro);
         response.status(500).json({ erro: "Erro interno ao cadastrar produto" });
     }
+}
+
+async function buscarDados(response) {
+    const dados = await fs.readFile(nomeArquivo, "utf-8") || [];
+    const listaProdutos = dados.trim() ? JSON.parse(dados) : [];
+
+    const nomeProduto = listaProdutos.map((produto) => {
+        return (
+                    "<div class='produto'>" +
+                            "<p>Id: " + produto.id + "</p>" +
+                            "<p>Produto: " + produto.nome + "</p>" +
+                            "<p>Descrição: " + produto.descricao + "</p>" +
+                            "<p>Preço: R$ " + produto.preco.toFixed(2).replace(".", ",") + "</p>" +
+                    "</div>"
+                )
+    }).join(); 
+
+    response.send(nomeProduto);
+      
+}
+
+async function buscarDadosId(request, response) {
+    const dados = await fs.readFile(nomeArquivo, "utf-8");
+    const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
+
+    const idBuscado = Number(request.params.id);
+
+    const produto = listaProdutos.find((p) => p.id === idBuscado);
+
+    if (!produto) {
+        return response.status(404).send("<p>Produto não encontrado.</p>");
+    }
+
+    const html = `
+        <div class="produto">
+            <p>Id: ${produto.id}</p>
+            <p>Produto: ${produto.nome}</p>
+            <p>Descrição: ${produto.descricao}</p>
+            <p>Preço: R$ ${produto.preco.toFixed(2).replace(".", ",")}</p>
+        </div>
+    `;
+
+    response.send(html);   
 }
 
 
