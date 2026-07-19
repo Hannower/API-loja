@@ -34,8 +34,30 @@ app.get("/produtos/:id", buscarDadosId);
 app.put("/produtos/editar/:id", editarDados)
 
 // EXCLUIR PELO ID (DELETE: ID)
+app.delete("/produtos/delete/:id", deletarDados)
 
 // ===== FUNCTIONS ===== //
+
+async function deletarDados(request, response) {
+    const dados = await fs.readFile(nomeArquivo, "utf-8");
+    const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
+
+    const idBuscado = Number(request.params.id);
+
+    const indice = listaProdutos.findIndex((p) => p.id === idBuscado);
+
+     if (indice === -1) {
+        return response.status(404).send("<p>Produto não encontrado.</p>");
+    }
+
+    listaProdutos.splice(indice, 1);
+
+    await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos));
+
+    response.status(200).json({
+        mensagem: "Produto removido com sucesso!",
+    });
+}
 
 async function editarDados(request, response) {
     const dados = await fs.readFile(nomeArquivo, "utf-8");
