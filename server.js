@@ -19,7 +19,6 @@ app.get("/", (request, response) => {
 // Cadastra um novo produto
 app.post("/produtos/registro", validarDados, cadastrarProduto);
 
-
 // ===== CRIAR OS DEMAIS MÉTODOS DA API ===== //
 
 // BUSCAR TODOS (GET)
@@ -37,51 +36,6 @@ app.put("/produtos/editar/:id", editarDados)
 app.delete("/produtos/delete/:id", deletarDados)
 
 // ===== FUNCTIONS ===== //
-
-async function deletarDados(request, response) {
-    const dados = await fs.readFile(nomeArquivo, "utf-8");
-    const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
-
-    const idBuscado = Number(request.params.id);
-
-    const indice = listaProdutos.findIndex((p) => p.id === idBuscado);
-
-     if (indice === -1) {
-        return response.status(404).send("<p>Produto não encontrado.</p>");
-    }
-
-    listaProdutos.splice(indice, 1);
-
-    await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos));
-
-    response.status(200).json({
-        mensagem: "Produto removido com sucesso!",
-    });
-}
-
-async function editarDados(request, response) {
-    const dados = await fs.readFile(nomeArquivo, "utf-8");
-    const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
-
-    const idBuscado = Number(request.params.id);
-
-    const indice = listaProdutos.findIndex((p) => p.id === idBuscado);
-
-    if (indice === -1) {
-        return response.status(404).send("<p>Produto não encontrado.</p>");
-    }
-
-    const produtoAtualizado = { ...listaProdutos[indice], ...request.body };
-
-    listaProdutos[indice] = produtoAtualizado;
-
-    await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos));
-
-    response.status(200).json({
-        mensagem: "Produto atualizado com sucesso!",
-        data: produtoAtualizado
-    });
-}
 
 function validarDados(request, response, next) {
     // Recebe os dados vindos do POST (formulário)
@@ -107,14 +61,6 @@ async function cadastrarProduto(request, response) {
     try {
         // Desestruturação 
         const { nome, descricao, fotos, preco, categoria, disponivel = true } = request.body;
-        
-        // É o equivalente à:
-        // const nome = request.body.nome;
-        // const descricao = request.body.descricao;
-        // const fotos = request.body.fotos;
-        // const preco = request.body.preco;
-        // const categoria = request.body.categoria;
-        // const disponivel = request.body.disponivel || true; // valor default
 
         // Lê o arquivo atual
         const dados = await fs.readFile(nomeArquivo, "utf-8") || [];
@@ -159,44 +105,104 @@ async function buscarDados(response) {
     const dados = await fs.readFile(nomeArquivo, "utf-8") || [];
     const listaProdutos = dados.trim() ? JSON.parse(dados) : [];
 
-    const nomeProduto = listaProdutos.map((produto) => {
-        return (
-                    "<div class='produto'>" +
-                            "<p>Id: " + produto.id + "</p>" +
-                            "<p>Produto: " + produto.nome + "</p>" +
-                            "<p>Descrição: " + produto.descricao + "</p>" +
-                            "<p>Preço: R$ " + produto.preco.toFixed(2).replace(".", ",") + "</p>" +
-                    "</div>"
-                )
-    }).join(); 
-
-    response.send(nomeProduto);
-      
+    response.status(200).json({
+    data: listaProdutos
+    });  
 }
 
 async function buscarDadosId(request, response) {
+    // Lê o arquivo atual
+    const dados = await fs.readFile(nomeArquivo, "utf-8") || [];
+
+    // Converte os dados para JSON
+    const listaProdutos = dados.trim() ? JSON.parse(dados) : [];
+
+    // Busca o produto dentro da lista
+    const produto = listaProdutos.find((produto) => produto.id == request.params.id);
+    // const produto = listaProdutos.find((produto) => produto.id == request.params.id);
+
+    if (!produto) {
+        return response.status(404).json(
+            {
+                mensagem: "Produto não encontrado"
+            }
+        );
+    }
+
+    // Response
+    response.status(200).json({
+        data: produto
+    });
+}
+
+async function editarDados(request, response) {
     const dados = await fs.readFile(nomeArquivo, "utf-8");
     const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
 
     const idBuscado = Number(request.params.id);
 
-    const produto = listaProdutos.find((p) => p.id === idBuscado);
+    const indice = listaProdutos.findIndex((p) => p.id === idBuscado);
 
-    if (!produto) {
+    if (indice === -1) {
         return response.status(404).send("<p>Produto não encontrado.</p>");
     }
 
-    const html = `
-        <div class="produto">
-            <p>Id: ${produto.id}</p>
-            <p>Produto: ${produto.nome}</p>
-            <p>Descrição: ${produto.descricao}</p>
-            <p>Preço: R$ ${produto.preco.toFixed(2).replace(".", ",")}</p>
-        </div>
-    `;
+    const produtoAtualizado = { ...listaProdutos[indice], ...request.body };
 
-    response.send(html);   
+    listaProdutos[indice] = produtoAtualizado;
+
+    await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos));
+
+    response.status(200).json({
+        mensagem: "Produto atualizado com sucesso!",
+        data: produtoAtualizado
+    });
 }
+
+async function deletarDados(request, response) {
+    const dados = await fs.readFile(nomeArquivo, "utf-8");
+    const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
+
+    const idBuscado = Number(request.params.id);
+
+    const indice = listaProdutos.findIndex((p) => p.id === idBuscado);
+
+     if (indice === -1) {
+        return response.status(404).send("<p>Produto não encontrado.</p>");
+    }
+
+    listaProdutos.splice(indice, 1);
+
+    await fs.writeFile(nomeArquivo, JSON.stringify(listaProdutos));
+
+    response.status(200).json({
+        mensagem: "Produto removido com sucesso!",
+    });
+}
+
+// async function buscarDadosId(request, response) {
+//     const dados = await fs.readFile(nomeArquivo, "utf-8");
+//     const listaProdutos = dados && dados.trim() ? JSON.parse(dados) : [];
+
+//     const idBuscado = Number(request.params.id);
+
+//     const produto = listaProdutos.find((p) => p.id === idBuscado);
+
+//     if (!produto) {
+//         return response.status(404).send("<p>Produto não encontrado.</p>");
+//     }
+
+//     const html = `
+//         <div class="produto">
+//             <p>Id: ${produto.id}</p>
+//             <p>Produto: ${produto.nome}</p>
+//             <p>Descrição: ${produto.descricao}</p>
+//             <p>Preço: R$ ${produto.preco.toFixed(2).replace(".", ",")}</p>
+//         </div>
+//     `;
+
+//     response.send(html);   
+// }
 
 
 
